@@ -1,5 +1,8 @@
 <template>
   <div class="admin mt-4">
+    <pre>
+      {{ predictions }}
+    </pre>
     <ag-grid-vue
       :rowData="rows"
       :columnDefs="cols"
@@ -26,6 +29,11 @@ export default {
         { make: 'Toyota', model: 'Corolla', price: 29600, electric: false },
       ],
     }
+  },
+  computed: {
+    predictions() {
+      return this.$store.getters.predictions
+    },
   },
 }
 </script>

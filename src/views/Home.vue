@@ -93,14 +93,13 @@
 import { db } from '@/firebase'
 import {
   collection,
-  query,
-  orderBy,
-  getDocs,
-  where,
   addDoc,
   serverTimestamp,
   doc,
   getDoc,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore'
 import { Notivue, Notification, push } from 'notivue'
 
@@ -110,23 +109,24 @@ export default {
     return {
       name: '',
       location: null,
-      locations: [],
       items: [],
-      users: [],
       user: {},
       push: null,
     }
   },
   created() {
-    this.getAndSetLocations()
-    this.getUsers()
-    this.getAllItems()
-    this.getPredictions()
     this.push = push
   },
   computed: {
     lightTheme() {
       return this.$store.getters.lightTheme
+    },
+
+    locations() {
+      return this.$store.getters.locations
+    },
+    users() {
+      return this.$store.getters.users
     },
 
     itemsArePresent() {
@@ -137,29 +137,11 @@ export default {
     },
   },
   methods: {
-    async getAndSetLocations() {
-      const locationRef = query(collection(db, 'location'), orderBy('id'))
-      const locationSnapshot = await getDocs(locationRef)
-      this.locations = locationSnapshot.docs.map((doc) => {
-        return {
-          docId: doc.id,
-          ...doc.data(),
-        }
-      })
-      this.$store.dispatch('fetchLocations', this.locations)
+    getItemImage(item) {
+      if (!item) return
+      return `/${item.location?.acronym}/${item?.acronym}.jpeg`
     },
-    async getAllItems() {
-      const itemRef = query(collection(db, 'items'), orderBy('id'))
-      const itemSnapshot = await getDocs(itemRef)
-      const items = itemSnapshot.docs.map((doc) => {
-        return {
-          docId: doc.id,
-          ...doc.data(),
-          count: 0,
-        }
-      })
-      this.$store.dispatch('fetchItems', items)
-    },
+
     async getAndSetItems() {
       if (!this.location) return
       const location = this.locations.find((l) => l.id == this.location)
@@ -175,10 +157,6 @@ export default {
       })
     },
 
-    getItemImage(item) {
-      return `/${item.location.acronym}/${item.acronym}.jpeg`
-    },
-
     addValue(item, action, count) {
       if (action == 'add') {
         item.count += count
@@ -187,18 +165,6 @@ export default {
         if (item.count == 0) return
         item.count -= count
       }
-    },
-
-    async getUsers() {
-      const userRef = query(collection(db, 'users'))
-      const userSnapshot = await getDocs(userRef)
-      this.users = userSnapshot.docs.map((doc) => {
-        return {
-          docId: doc.id,
-          ...doc.data(),
-        }
-      })
-      this.$store.dispatch('fetchUsers', this.users)
     },
 
     submitForm() {
@@ -245,18 +211,6 @@ export default {
           this.user = {}
         }, 2000)
       }
-    },
-
-    async getPredictions() {
-      const predRef = query(collection(db, 'prediction'))
-      const predSnapshot = await getDocs(predRef)
-      const predictions = predSnapshot.docs.map((doc) => {
-        return {
-          docId: doc.id,
-          ...doc.data(),
-        }
-      })
-      this.$store.dispatch('fetchPredictions', predictions)
     },
   },
 }
