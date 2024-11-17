@@ -14,9 +14,9 @@
       <div class="text-color-text text-xl text-center">Please fill in the details</div>
       <div class="form flex justify-center items-center">
         <div class="name my-2 mr-2">
-          <label for="name" class="text-center block text-sm font-medium text-color-text"
-            >Full Name</label
-          >
+          <label for="name" class="text-center block text-sm font-medium text-color-text">
+            Full Name
+          </label>
           <input
             v-model="name"
             type="text"
@@ -26,9 +26,9 @@
           />
         </div>
         <div class="office my-2">
-          <label for="office" class="text-center block text-sm font-medium text-color-text"
-            >Office</label
-          >
+          <label for="office" class="text-center block text-sm font-medium text-color-text">
+            Office
+          </label>
           <select
             v-model="location"
             name=""
@@ -36,7 +36,7 @@
             class="mt-1 block w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
             @change="getAndSetItems"
           >
-            <option value="" selected>Please Select</option>
+            <option :value="null" selected>Please Select</option>
             <option v-for="location in locations" :key="location.docId" :value="location.id">
               {{ location.name }}
             </option>
@@ -92,6 +92,9 @@
       >
         Submit
       </button>
+      <Notivue v-slot="item">
+        <Notification :item="item" />
+      </Notivue>
     </div>
   </div>
 </template>
@@ -112,9 +115,10 @@ import {
   doc,
   getDoc,
 } from 'firebase/firestore'
+import { Notivue, Notification, push } from 'notivue'
 
 export default {
-  components: { AppLogo, LightTheme, DarkTheme },
+  components: { AppLogo, LightTheme, DarkTheme, Notivue, Notification },
   data() {
     return {
       name: '',
@@ -123,11 +127,13 @@ export default {
       items: [],
       users: [],
       user: {},
+      push: null,
     }
   },
   created() {
     this.getAndSetLocations()
     this.getUsers()
+    this.push = push
   },
   computed: {
     lightTheme() {
@@ -218,19 +224,28 @@ export default {
       }
     },
 
-    addPrediction() {
-      this.itemsWithCount.map((iwc) => {
-        const formData = {
-          count: iwc.count,
-          itemid: iwc.id,
-          userid: this.user.id,
-          locationid: this.location,
-          date: serverTimestamp(),
-        }
-        const docRef = addDoc(collection(db, 'prediction'), formData)
-        console.log('🚀 docRef:', docRef, docRef.id)
-        // if (docRef.id) // success
-      })
+    async addPrediction() {
+      let results = await Promise.all(
+        this.itemsWithCount.map((iwc) => {
+          const formData = {
+            count: iwc.count,
+            itemid: iwc.id,
+            userid: this.user.id,
+            locationid: this.location,
+            date: serverTimestamp(),
+          }
+          return addDoc(collection(db, 'prediction'), formData)
+        }),
+      )
+      if (results.length) {
+        push.success('Saved!')
+        // reset the form
+        setTimeout(() => {
+          this.location = null
+          this.name = ''
+          this.user = {}
+        }, 2000)
+      }
     },
   },
 }
