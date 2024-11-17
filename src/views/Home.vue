@@ -1,15 +1,5 @@
 <template>
-  <div class="w-100 px-20 py-8">
-    <div class="header flex items-center justify-between">
-      <div>
-        <AppLogo :light-theme="lightTheme" />
-        <div class="text-color-text text-2xl italic mt-2">Donation Drive</div>
-      </div>
-      <div class="theme cursor-pointer">
-        <LightTheme v-if="!lightTheme" @click="changeTheme(true)" />
-        <DarkTheme v-if="lightTheme" @click="changeTheme(false)" />
-      </div>
-    </div>
+  <div>
     <div class="body mt-4">
       <div class="text-color-text text-xl text-center">Please fill in the details</div>
       <div class="form flex justify-center items-center">
@@ -83,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div v-if="name && location" class="submit mt-8 text-center">
+    <div class="submit mt-8 text-center">
       <button
         type="submit"
         class="text-white py-2 px-4 rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in"
@@ -100,9 +90,6 @@
 </template>
 
 <script lang="js">
-import AppLogo from '../components/AppLogo.vue'
-import LightTheme from '../components/LightTheme.vue'
-import DarkTheme from '../components/DarkTheme.vue'
 import { db } from '@/firebase'
 import {
   collection,
@@ -118,7 +105,7 @@ import {
 import { Notivue, Notification, push } from 'notivue'
 
 export default {
-  components: { AppLogo, LightTheme, DarkTheme, Notivue, Notification },
+  components: { Notivue, Notification },
   data() {
     return {
       name: '',
@@ -148,12 +135,6 @@ export default {
     },
   },
   methods: {
-    changeTheme(theme) {
-      this.$store.dispatch('changeTheme', theme).then(() => {
-        console.log('done')
-      })
-    },
-
     async getAndSetLocations() {
       const locationRef = query(collection(db, 'location'), orderBy('id'))
       const locationSnapshot = await getDocs(locationRef)
@@ -205,7 +186,9 @@ export default {
     },
 
     submitForm() {
-      if (!this.name || !this.location || !this.itemsArePresent) return
+      if (!this.name) return push.error('Please enter your name!')
+      if (!this.location) return push.error('Please select the location!')
+      if (!this.itemsArePresent) return push.error('Please add the items before saving!')
       this.addUser()
     },
 
