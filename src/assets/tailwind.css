@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.theme-light {
+  --primary: #0a6cff;
+  --background: theme(colors.gray.100);
+  --background-lighter: theme(colors.gray.500);
+  --color-text: #19344d;
+  --color-text-gray: #0d0106;
+  --accent: #042d68;
+  --accent-text: theme(colors.teal.700);
+  --accent-bg: theme(colors.green.200);
+}
+
+.theme-dark {
+  --primary: #0a6cff;
+  --background: #141420;
+  --background-lighter: #414168;
+  --color-text: #eaeaea;
+  --color-text-gray: #0d0106;
+  --accent: #042d68;
+  --accent-text: theme(colors.teal.800);
+  --accent-bg: theme(colors.green.300);
+}
