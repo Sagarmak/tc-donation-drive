@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 px-20 py-10">
+  <div class="w-100 px-20 py-8">
     <div class="header flex items-center justify-between">
       <div>
         <AppLogo :light-theme="lightTheme" />
@@ -12,9 +12,11 @@
     </div>
     <div class="body mt-4">
       <div class="text-color-text text-xl text-center">Please fill in the details</div>
-      <div class="form flex flex-col items-center">
-        <div class="name my-2">
-          <label for="name block text-sm font-medium text-gray-700">Full Name</label>
+      <div class="form flex justify-center items-center">
+        <div class="name my-2 mr-2">
+          <label for="name" class="text-center block text-sm font-medium text-color-text"
+            >Full Name</label
+          >
           <input
             v-model="name"
             type="text"
@@ -24,7 +26,9 @@
           />
         </div>
         <div class="office my-2">
-          <label for="office block text-sm font-medium text-gray-700">Office</label>
+          <label for="office" class="text-center block text-sm font-medium text-color-text"
+            >Office</label
+          >
           <select
             v-model="location"
             name=""
@@ -40,41 +44,40 @@
         </div>
       </div>
     </div>
-    <div v-if="!location" class="text-color-text text-xl text-center mt-4">
-      Please select the location to continue
-    </div>
     <div v-if="location" class="select-item mt-4">
-      <div class="text-color-text text-xl text-center">
+      <div class="text-color-text text-xl text-center mb-4">
         Please select the items of donation with quantity
       </div>
       <div class="items flex justify-evenly items-center">
         <div
-          class="item rounded-md bg-white w-44 mt-4 shadow-2xl"
+          class="item rounded-md bg-white w-52 shadow-2xl"
           v-for="item in items"
           :key="item.docId"
         >
           <div class="item-image pt-2">
             <img
-              class="mx-auto h-40 w-40 rounded-md object-cover"
+              class="mx-auto h-48 w-48 rounded-md object-cover"
               :src="getItemImage(item)"
               alt="therabands"
             />
-            <div class="text text-center py-2 px-1 min-h-20 flex items-center justify-center">
-              {{ item.name }}
+          </div>
+          <div class="text text-center py-2 px-2 min-h-20 flex items-center justify-center">
+            {{ item.name }}
+          </div>
+          <hr />
+          <div class="counter flex justify-evenly items-center text-center min-h-8">
+            <div
+              class="subtract cursor-pointer w-10 hover:bg-slate-200 transition duration-200 ease-in rounded-full"
+              @click="addValue(item, 'remove', 1)"
+            >
+              -
             </div>
-            <hr />
-            <div class="counter flex justify-evenly items-center text-center min-h-8">
-              <div
-                class="subtract cursor-pointer w-10 hover:bg-slate-200 transition duration-200 ease-in rounded-full"
-              >
-                -
-              </div>
-              <div class="score w-10">0</div>
-              <div
-                class="addition cursor-pointer w-10 hover:bg-slate-200 transition duration-200 ease-in rounded-full"
-              >
-                +
-              </div>
+            <div class="score w-10">{{ item.count }}</div>
+            <div
+              class="addition cursor-pointer w-10 hover:bg-slate-200 transition duration-200 ease-in rounded-full"
+              @click="addValue(item, 'add', 1)"
+            >
+              +
             </div>
           </div>
         </div>
@@ -83,7 +86,9 @@
     <div v-if="name && location" class="submit mt-8 text-center">
       <button
         type="submit"
-        class="text-white bg-primary py-2 px-4 rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in"
+        class="text-white py-2 px-4 rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in"
+        :class="itemsArePresent ? 'bg-primary' : 'bg-gray-400'"
+        @click="submitForm"
       >
         Submit
       </button>
@@ -96,7 +101,17 @@ import AppLogo from '../components/AppLogo.vue'
 import LightTheme from '../components/LightTheme.vue'
 import DarkTheme from '../components/DarkTheme.vue'
 import { db } from '@/firebase'
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  where,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc,
+} from 'firebase/firestore'
 
 export default {
   components: { AppLogo, LightTheme, DarkTheme },
@@ -106,14 +121,24 @@ export default {
       location: null,
       locations: [],
       items: [],
+      users: [],
+      user: {},
     }
   },
   created() {
     this.getAndSetLocations()
+    this.getUsers()
   },
   computed: {
     lightTheme() {
       return this.$store.getters.lightTheme
+    },
+
+    itemsArePresent() {
+      return this.items.some((i) => i.count)
+    },
+    itemsWithCount() {
+      return this.items.filter((i) => i.count)
     },
   },
   methods: {
@@ -124,9 +149,9 @@ export default {
     },
 
     async getAndSetLocations() {
-      const matchesRef = query(collection(db, 'location'), orderBy('id'))
-      const matchesSnapshot = await getDocs(matchesRef)
-      this.locations = matchesSnapshot.docs.map((doc) => {
+      const locationRef = query(collection(db, 'location'), orderBy('id'))
+      const locationSnapshot = await getDocs(locationRef)
+      this.locations = locationSnapshot.docs.map((doc) => {
         return {
           docId: doc.id,
           ...doc.data(),
@@ -134,22 +159,78 @@ export default {
       })
     },
     async getAndSetItems() {
-      console.log(this.location)
       if (!this.location) return
       const location = this.locations.find((l) => l.id == this.location)
-      const matchesRef = query(collection(db, 'items'), where('locationid', '==', this.location))
-      const matchesSnapshot = await getDocs(matchesRef)
-      this.items = matchesSnapshot.docs.map((doc) => {
+      const itemRef = query(collection(db, 'items'), where('locationid', '==', this.location))
+      const itemSnapshot = await getDocs(itemRef)
+      this.items = itemSnapshot.docs.map((doc) => {
         return {
           docId: doc.id,
           ...doc.data(),
           location,
+          count: 0,
         }
       })
     },
 
     getItemImage(item) {
       return `/${item.location.acronym}/${item.acronym}.jpeg`
+    },
+
+    addValue(item, action, count) {
+      if (action == 'add') {
+        item.count += count
+      }
+      if (action == 'remove') {
+        if (item.count == 0) return
+        item.count -= count
+      }
+    },
+
+    async getUsers() {
+      const userRef = query(collection(db, 'users'))
+      const userSnapshot = await getDocs(userRef)
+      this.users = userSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
+    },
+
+    submitForm() {
+      if (!this.name || !this.location || !this.itemsArePresent) return
+      this.addUser()
+    },
+
+    async addUser() {
+      const formData = {
+        id: this.users.length + 1,
+        name: this.name,
+      }
+      const docRef = await addDoc(collection(db, 'users'), formData)
+      const userRef = doc(db, 'users', docRef.id)
+      if (docRef.id) {
+        getDoc(userRef).then((doc) => {
+          this.user = doc.data()
+          this.addPrediction()
+        })
+      }
+    },
+
+    addPrediction() {
+      this.itemsWithCount.map((iwc) => {
+        const formData = {
+          count: iwc.count,
+          itemid: iwc.id,
+          userid: this.user.id,
+          locationid: this.location,
+          date: serverTimestamp(),
+        }
+        const docRef = addDoc(collection(db, 'prediction'), formData)
+        console.log('🚀 docRef:', docRef, docRef.id)
+        // if (docRef.id) // success
+      })
     },
   },
 }
