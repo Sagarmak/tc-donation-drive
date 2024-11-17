@@ -120,6 +120,8 @@ export default {
   created() {
     this.getAndSetLocations()
     this.getUsers()
+    this.getAllItems()
+    this.getPredictions()
     this.push = push
   },
   computed: {
@@ -144,6 +146,19 @@ export default {
           ...doc.data(),
         }
       })
+      this.$store.dispatch('fetchLocations', this.locations)
+    },
+    async getAllItems() {
+      const itemRef = query(collection(db, 'items'), orderBy('id'))
+      const itemSnapshot = await getDocs(itemRef)
+      const items = itemSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+          count: 0,
+        }
+      })
+      this.$store.dispatch('fetchItems', items)
     },
     async getAndSetItems() {
       if (!this.location) return
@@ -183,6 +198,7 @@ export default {
           ...doc.data(),
         }
       })
+      this.$store.dispatch('fetchUsers', this.users)
     },
 
     submitForm() {
@@ -229,6 +245,18 @@ export default {
           this.user = {}
         }, 2000)
       }
+    },
+
+    async getPredictions() {
+      const predRef = query(collection(db, 'prediction'))
+      const predSnapshot = await getDocs(predRef)
+      const predictions = predSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
+      this.$store.dispatch('fetchPredictions', predictions)
     },
   },
 }
