@@ -2,7 +2,7 @@
   <div>
     <div class="body mt-4">
       <div class="text-color-text text-xl text-center">Please fill in the details</div>
-      <div class="form flex justify-center items-center">
+      <div class="form flex flex-col items-center lg:justify-center">
         <div class="name my-2 mr-2">
           <label for="name" class="text-center block text-sm font-medium text-color-text">
             Full Name
@@ -43,9 +43,9 @@
           class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600"
         />
       </div>
-      <div v-else class="items flex justify-evenly items-center">
+      <div v-else class="items flex flex-col items-center lg:flex-row lg:justify-evenly">
         <div
-          class="item rounded-md bg-white w-52 shadow-2xl"
+          class="item rounded-md bg-white w-52 shadow-2xl mb-6 lg:mb-0"
           v-for="item in items"
           :key="item.docId"
         >
@@ -96,7 +96,7 @@
   </div>
   <button
     type="button"
-    class="text-white py-2 px-4 bg-accent rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in absolute bottom-0 right-0 m-4"
+    class="text-white py-2 px-4 bg-accent rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in fixed bottom-0 right-0 m-4"
     @click="redirectToAdmin"
   >
     Admin

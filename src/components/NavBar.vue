@@ -1,10 +1,12 @@
 <template>
-  <div class="header flex items-center justify-between">
+  <div class="header flex items-center justify-center lg:justify-between">
     <div>
       <AppLogo :light-theme="lightTheme" />
-      <div class="text-color-text text-2xl italic mt-2">Donation Drive</div>
+      <div class="text-color-text text-center text-2xl italic mt-2 lg:text-left">
+        Donation Drive
+      </div>
     </div>
-    <div class="theme cursor-pointer">
+    <div class="theme cursor-pointer fixed bottom-0 left-0 m-4 lg:relative">
       <LightTheme v-if="!lightTheme" @click="changeTheme(true)" />
       <DarkTheme v-if="lightTheme" @click="changeTheme(false)" />
     </div>
@@ -25,7 +27,7 @@ export default {
   methods: {
     changeTheme(theme) {
       this.$store.dispatch('changeTheme', theme).then(() => {
-        console.log('done')
+        //
       })
     },
   },

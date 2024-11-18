@@ -1,6 +1,6 @@
 <template>
   <div
-    class="layout mx-auto min-h-screen bg-background transition duration-300 ease-in-out w-100 px-20 py-8"
+    class="layout mx-auto min-h-screen bg-background transition duration-300 ease-in-out w-100 lg:px-20 lg:py-8 px-6 py-10"
     :class="{ 'theme-light': lightTheme, 'theme-dark': !lightTheme }"
   >
     <NavBar />

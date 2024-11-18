@@ -5,7 +5,7 @@
         v-model="location"
         name=""
         id=""
-        class="mt-1 block w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
+        class="mt-1 block w-56 lg:w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
         @change="changeLocation"
       >
         <option :value="null" selected>Please Select the location</option>
@@ -30,6 +30,7 @@
       domLayout="autoHeight"
       :autoSizeStrategy="autoSizeStrategy"
       class="ag-theme-quartz"
+      :suppressRowTransform="true"
     />
   </div>
 </template>
@@ -54,13 +55,26 @@ export default {
       location: null,
       itemCols: [{ field: 'item' }, { field: 'count' }],
       cols: [
-        { field: 'user' },
+        {
+          field: 'user',
+          rowSpan: function (params) {
+            let user = params.data.user
+            let useridCount = params.data.useridCount
+            if (user) {
+              return useridCount
+            } else {
+              return 1
+            }
+          },
+          cellClassRules: {
+            'cell-span': "value === 'Sagar Makhija' || value === 'manjunath roy'",
+          },
+        },
         { field: 'location' },
         { field: 'item' },
         { field: 'count' },
         { field: 'date' },
       ],
-      rows: [{ make: 'Tesla', model: 'Model Y', price: 64950, electric: true }],
       modifiedPredictions: [],
       autoSizeStrategy: {
         type: 'fitGridWidth',
@@ -106,6 +120,8 @@ export default {
             user: this.users.find((u) => u.id == pred.userid)?.name,
             item: this.items.find((i) => i.id == pred.itemid)?.name,
             date: new Date(pred.date?.seconds * 1000).toString(),
+            useridCount: this.predictions.filter((prediction) => prediction.userid == pred.userid)
+              ?.length,
           }
         })
         .filter((prediction) => {
@@ -128,3 +144,8 @@ export default {
   },
 }
 </script>
+<style>
+.cell-span {
+  background-color: #ffffff;
+}
+</style>
