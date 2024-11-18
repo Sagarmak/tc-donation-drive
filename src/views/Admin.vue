@@ -6,7 +6,7 @@
         name=""
         id=""
         class="mt-1 block w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
-        @change="makeTableData"
+        @change="changeLocation"
       >
         <option :value="null" selected>Please Select the location</option>
         <option v-for="location in locations" :key="location.docId" :value="location.id">
@@ -14,6 +14,15 @@
         </option>
       </select>
     </div>
+    <ag-grid-vue
+      v-if="location"
+      :columnDefs="itemCols"
+      :rowData="itemWiseCountData"
+      style="width: 100%"
+      domLayout="autoHeight"
+      :autoSizeStrategy="autoSizeStrategy"
+      class="ag-theme-quartz mb-4"
+    />
     <ag-grid-vue
       :columnDefs="cols"
       :rowData="modifiedPredictions"
@@ -43,6 +52,7 @@ export default {
   data() {
     return {
       location: null,
+      itemCols: [{ field: 'item' }, { field: 'count' }],
       cols: [
         { field: 'user' },
         { field: 'location' },
@@ -56,6 +66,7 @@ export default {
         type: 'fitGridWidth',
         defaultMinWidth: 100,
       },
+      itemWiseCountData: [],
     }
   },
   computed: {
@@ -71,8 +82,21 @@ export default {
     items() {
       return this.$store.getters.items
     },
+
+    fetchItemWiseCount() {
+      // ex: item 1 has count 3
+      return Object.groupBy(this.predictions, (obj) => obj.itemid)
+    },
+    fetchLocationWiseItemCount() {
+      // ex: item 1 has count 3
+      return Object.groupBy(this.predictions, (obj) => obj.locationid)
+    },
   },
   methods: {
+    changeLocation() {
+      this.makeTableData()
+      this.fetchLocationWiseData()
+    },
     makeTableData() {
       this.modifiedPredictions = this.predictions
         .map((pred) => {
@@ -82,13 +106,24 @@ export default {
             location: this.locations.find((l) => l.id == pred.locationid)?.name,
             user: this.users.find((u) => u.id == pred.userid)?.name,
             item: this.items.find((i) => i.id == pred.itemid)?.name,
-            date: new Date(pred.date?.seconds * 1000),
+            date: new Date(pred.date?.seconds * 1000).toString(),
           }
         })
         .filter((prediction) => {
           if (!this.location) return prediction
           return prediction.locationid == this.location
         })
+    },
+    fetchLocationWiseData() {
+      const currentLocationData = this.fetchLocationWiseItemCount[this.location]
+      const itemWiseData = Object.groupBy(currentLocationData, (obj) => obj.itemid)
+      this.itemWiseCountData = Object.keys(itemWiseData).map((i) => {
+        return {
+          itemId: i,
+          item: this.items.find((item) => item.id == i)?.name,
+          count: itemWiseData[i].reduce((acc, item) => (acc += item.count), 0),
+        }
+      })
     },
   },
 }
