@@ -37,6 +37,9 @@ export default {
       this.makeTableData()
     },
   },
+  created() {
+    if (this.predictions?.length) this.makeTableData()
+  },
   data() {
     return {
       location: null,

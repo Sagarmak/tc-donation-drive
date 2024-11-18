@@ -38,7 +38,12 @@
       <div class="text-color-text text-xl text-center mb-4">
         Please select the items of donation with quantity
       </div>
-      <div class="items flex justify-evenly items-center">
+      <div v-if="isLoading" class="flex justify-center items-center">
+        <div
+          class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600"
+        />
+      </div>
+      <div v-else class="items flex justify-evenly items-center">
         <div
           class="item rounded-md bg-white w-52 shadow-2xl"
           v-for="item in items"
@@ -70,6 +75,8 @@
               +
             </div>
           </div>
+          <hr />
+          <div class="donations p-2 text-center">Donations: {{ item.itemWiseCount }}</div>
         </div>
       </div>
     </div>
@@ -119,6 +126,8 @@ export default {
       items: [],
       user: {},
       push: null,
+
+      isLoading: false,
     }
   },
   created() {
@@ -135,12 +144,20 @@ export default {
     users() {
       return this.$store.getters.users
     },
+    predictions() {
+      return this.$store.getters.predictions
+    },
 
     itemsArePresent() {
       return this.items.some((i) => i.count)
     },
     itemsWithCount() {
       return this.items.filter((i) => i.count)
+    },
+
+    fetchItemWiseCount() {
+      // ex: item 1 has count 3
+      return Object.groupBy(this.predictions, (obj) => obj.itemid)
     },
   },
   methods: {
@@ -150,18 +167,25 @@ export default {
     },
 
     async getAndSetItems() {
+      this.isLoading = true
       if (!this.location) return
       const location = this.locations.find((l) => l.id == this.location)
       const itemRef = query(collection(db, 'items'), where('locationid', '==', this.location))
       const itemSnapshot = await getDocs(itemRef)
       this.items = itemSnapshot.docs.map((doc) => {
+        const itemWiseCount = this.fetchItemWiseCount[doc.data()?.id]?.reduce(
+          (acc, item) => (acc += item.count),
+          0,
+        )
         return {
           docId: doc.id,
           ...doc.data(),
           location,
           count: 0,
+          itemWiseCount: itemWiseCount || 0,
         }
       })
+      this.isLoading = false
     },
 
     addValue(item, action, count) {
