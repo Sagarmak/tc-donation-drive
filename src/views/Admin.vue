@@ -100,7 +100,6 @@ export default {
     makeTableData() {
       this.modifiedPredictions = this.predictions
         .map((pred) => {
-          if (pred?.date?.seconds) console.log(new Date(pred.date?.seconds * 1000))
           return {
             ...pred,
             location: this.locations.find((l) => l.id == pred.locationid)?.name,
@@ -113,6 +112,7 @@ export default {
           if (!this.location) return prediction
           return prediction.locationid == this.location
         })
+        .sort((a, b) => (a.date > b.date ? -1 : b.date > a.date ? 1 : 0))
     },
     fetchLocationWiseData() {
       const currentLocationData = this.fetchLocationWiseItemCount[this.location]
