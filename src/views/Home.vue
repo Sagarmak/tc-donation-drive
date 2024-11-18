@@ -87,6 +87,13 @@
       </Notivue>
     </div>
   </div>
+  <button
+    type="button"
+    class="text-white py-2 px-4 bg-accent rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in absolute bottom-0 right-0 m-4"
+    @click="redirectToAdmin"
+  >
+    Admin
+  </button>
 </template>
 
 <script lang="js">
@@ -211,6 +218,10 @@ export default {
           this.user = {}
         }, 2000)
       }
+    },
+
+    redirectToAdmin() {
+      this.$router.push({ name: 'admin' })
     },
   },
 }
