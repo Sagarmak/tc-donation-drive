@@ -52,7 +52,7 @@ import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { AgGridVue } from 'ag-grid-vue3'
 import { db } from '@/firebase'
-import { deleteDoc, doc, query, collection, getDocs } from 'firebase/firestore'
+import { deleteDoc, doc } from 'firebase/firestore'
 import { Notivue, Notification, push } from 'notivue'
 
 export default {
@@ -159,6 +159,8 @@ export default {
     },
 
     deletePrediction(docId) {
+      // before deleting the prediction, check if the same prediction's userid has other items
+      // if the user has other predictions as well, dont delete the user, else delete the user
       this.isAdminPageLoading = true
       deleteDoc(doc(db, 'prediction', docId))
         .then(() => {
@@ -168,16 +170,8 @@ export default {
         .finally(() => (this.isAdminPageLoading = false))
     },
 
-    async getPredictions() {
-      const predRef = query(collection(db, 'prediction'))
-      const predSnapshot = await getDocs(predRef)
-      const predictions = predSnapshot.docs.map((doc) => {
-        return {
-          docId: doc.id,
-          ...doc.data(),
-        }
-      })
-      this.$store.dispatch('fetchPredictions', predictions)
+    getPredictions() {
+      this.$store.dispatch('fetchPredictions')
     },
 
     redirectToHome() {

@@ -235,6 +235,8 @@ export default {
       )
       if (results.length) {
         push.success('Saved!')
+        this.getUsers()
+        this.getPredictions()
         // reset the form
         setTimeout(() => {
           this.location = null
@@ -244,6 +246,12 @@ export default {
       }
     },
 
+    getPredictions() {
+      this.$store.dispatch('fetchPredictions')
+    },
+    getUsers() {
+      this.$store.dispatch('fetchUsers')
+    },
     redirectToAdmin() {
       this.$router.push({ name: 'admin' })
     },

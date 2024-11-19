@@ -1,4 +1,6 @@
 import { createStore } from 'vuex'
+import { db } from '@/firebase'
+import { collection, query, orderBy, getDocs } from 'firebase/firestore'
 
 const store = createStore({
   state() {
@@ -14,16 +16,49 @@ const store = createStore({
     changeTheme(context, theme) {
       context.commit('setTheme', theme)
     },
-    fetchUsers(context, users) {
+    async fetchUsers(context) {
+      const userRef = query(collection(db, 'users'))
+      const userSnapshot = await getDocs(userRef)
+      const users = userSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
       context.commit('setUsers', users)
     },
-    fetchLocations(context, locations) {
+    async fetchLocations(context) {
+      const locationRef = query(collection(db, 'location'), orderBy('id'))
+      const locationSnapshot = await getDocs(locationRef)
+      const locations = locationSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
       context.commit('setLocations', locations)
     },
-    fetchItems(context, items) {
+    async fetchItems(context) {
+      const itemRef = query(collection(db, 'items'), orderBy('id'))
+      const itemSnapshot = await getDocs(itemRef)
+      const items = itemSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+          count: 0,
+        }
+      })
       context.commit('setItems', items)
     },
-    fetchPredictions(context, predictions) {
+    async fetchPredictions(context) {
+      const predRef = query(collection(db, 'prediction'))
+      const predSnapshot = await getDocs(predRef)
+      const predictions = predSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
       context.commit('setPredictions', predictions)
     },
   },
