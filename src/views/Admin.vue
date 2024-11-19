@@ -22,6 +22,7 @@
       domLayout="autoHeight"
       :autoSizeStrategy="autoSizeStrategy"
       class="ag-theme-quartz mb-4"
+      :loading="isAdminPageLoading"
     />
     <ag-grid-vue
       :columnDefs="cols"
@@ -31,7 +32,11 @@
       :autoSizeStrategy="autoSizeStrategy"
       class="ag-theme-quartz"
       :suppressRowTransform="true"
+      :loading="isAdminPageLoading"
     />
+    <Notivue v-slot="item">
+      <Notification :item="item" />
+    </Notivue>
   </div>
 </template>
 
@@ -39,15 +44,19 @@
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { AgGridVue } from 'ag-grid-vue3'
+import { db } from '@/firebase'
+import { deleteDoc, doc, query, collection, getDocs } from 'firebase/firestore'
+import { Notivue, Notification, push } from 'notivue'
 
 export default {
-  components: { AgGridVue },
+  components: { AgGridVue, Notivue, Notification },
   watch: {
     predictions() {
       this.makeTableData()
     },
   },
   created() {
+    this.push = push
     if (this.predictions?.length) this.makeTableData()
   },
   data() {
@@ -55,25 +64,22 @@ export default {
       location: null,
       itemCols: [{ field: 'item' }, { field: 'count' }],
       cols: [
-        {
-          field: 'user',
-          rowSpan: function (params) {
-            let user = params.data.user
-            let useridCount = params.data.useridCount
-            if (user) {
-              return useridCount
-            } else {
-              return 1
-            }
-          },
-          cellClassRules: {
-            'cell-span': "value === 'Sagar Makhija' || value === 'manjunath roy'",
-          },
-        },
+        { field: 'user' },
         { field: 'location' },
         { field: 'item' },
         { field: 'count' },
         { field: 'date' },
+        {
+          field: 'action',
+          cellRenderer: (params) => {
+            const docId = params?.data?.docId
+            const eDiv = document.createElement('div')
+            eDiv.innerHTML = `<button class="delete-button-${docId} text-white bg-red-500 py-2 px-2 rounded-md shadow-sm border border-transparent text-xs">Delete</button>`
+            const button = eDiv.querySelectorAll(`.delete-button-${docId}`)
+            button[0].addEventListener('click', this.deletePrediction.bind('null', docId))
+            return eDiv
+          },
+        },
       ],
       modifiedPredictions: [],
       autoSizeStrategy: {
@@ -81,6 +87,9 @@ export default {
         defaultMinWidth: 100,
       },
       itemWiseCountData: [],
+      isAdminPageLoading: false,
+
+      push: null,
     }
   },
   computed: {
@@ -140,6 +149,28 @@ export default {
           count: itemWiseData[i].reduce((acc, item) => (acc += item.count), 0),
         }
       })
+    },
+
+    deletePrediction(docId) {
+      this.isAdminPageLoading = true
+      deleteDoc(doc(db, 'prediction', docId))
+        .then(() => {
+          push.success('Deleted!')
+          this.getPredictions()
+        })
+        .finally(() => (this.isAdminPageLoading = false))
+    },
+
+    async getPredictions() {
+      const predRef = query(collection(db, 'prediction'))
+      const predSnapshot = await getDocs(predRef)
+      const predictions = predSnapshot.docs.map((doc) => {
+        return {
+          docId: doc.id,
+          ...doc.data(),
+        }
+      })
+      this.$store.dispatch('fetchPredictions', predictions)
     },
   },
 }
