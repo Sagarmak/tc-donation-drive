@@ -37,6 +37,13 @@
     <Notivue v-slot="item">
       <Notification :item="item" />
     </Notivue>
+    <button
+      type="button"
+      class="text-white py-2 px-4 bg-accent rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in fixed bottom-0 right-0 m-4"
+      @click="redirectToHome"
+    >
+      Home
+    </button>
   </div>
 </template>
 
@@ -171,6 +178,10 @@ export default {
         }
       })
       this.$store.dispatch('fetchPredictions', predictions)
+    },
+
+    redirectToHome() {
+      this.$router.push({ name: 'home' })
     },
   },
 }
