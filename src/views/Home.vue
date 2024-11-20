@@ -94,13 +94,6 @@
       </Notivue>
     </div>
   </div>
-  <button
-    type="button"
-    class="text-white py-2 px-4 bg-accent rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in fixed bottom-0 right-0 m-4"
-    @click="redirectToAdmin"
-  >
-    Admin
-  </button>
 </template>
 
 <script lang="js">
@@ -251,9 +244,6 @@ export default {
     },
     getUsers() {
       this.$store.dispatch('fetchUsers')
-    },
-    redirectToAdmin() {
-      this.$router.push({ name: 'admin' })
     },
   },
 }
