@@ -83,8 +83,11 @@
     <div class="submit mt-8 text-center">
       <button
         type="submit"
-        class="text-white py-2 px-4 rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in"
-        :class="itemsArePresent ? 'bg-primary' : 'bg-gray-400'"
+        :class="{
+          'text-white py-2 px-4 rounded-md shadow-sm border border-transparent text-sm font-medium hover:bg-accent transition duration-200 ease-in bg-gray-400': true,
+          'bg-primary': itemsArePresent,
+          disabled: isDisabled,
+        }"
         @click="submitForm"
       >
         Submit
@@ -121,6 +124,7 @@ export default {
       push: null,
 
       isLoading: false,
+      isDisabled: false,
     }
   },
   created() {
@@ -199,6 +203,7 @@ export default {
     },
 
     async addUser() {
+      this.isDisabled = true
       const formData = {
         id: this.users.length + 1,
         name: this.name,
@@ -206,10 +211,12 @@ export default {
       const docRef = await addDoc(collection(db, 'users'), formData)
       const userRef = doc(db, 'users', docRef.id)
       if (docRef.id) {
-        getDoc(userRef).then((doc) => {
-          this.user = doc.data()
-          this.addPrediction()
-        })
+        getDoc(userRef)
+          .then((doc) => {
+            this.user = doc.data()
+            this.addPrediction()
+          })
+          .catch(() => (this.isDisabled = false))
       }
     },
 
@@ -230,6 +237,7 @@ export default {
         push.success('Saved!')
         this.getUsers()
         this.getPredictions()
+        this.isDisabled = false
         // reset the form
         setTimeout(() => {
           this.location = null
@@ -248,3 +256,10 @@ export default {
   },
 }
 </script>
+<style>
+.disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+</style>
