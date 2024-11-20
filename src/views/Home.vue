@@ -43,15 +43,15 @@
           class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600"
         />
       </div>
-      <div v-else class="items flex flex-col items-center lg:flex-row lg:justify-evenly">
+      <div v-else class="items flex flex-wrap items-center lg:flex-row lg:justify-evenly">
         <div
-          class="item rounded-md bg-white w-52 shadow-2xl mb-6 lg:mb-0"
+          class="item rounded-md bg-white shadow-2xl mb-6 lg:mb-0 md:flex-1 m-2 w-full"
           v-for="item in items"
           :key="item.docId"
         >
           <div class="item-image pt-2">
             <img
-              class="mx-auto h-48 w-48 rounded-md object-cover"
+              class="mx-auto rounded-md object-cover px-2"
               :src="getItemImage(item)"
               alt="therabands"
             />
