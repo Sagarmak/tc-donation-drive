@@ -4,14 +4,24 @@
       <select
         v-model="location"
         name=""
-        id=""
-        class="mt-1 block w-56 lg:w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
-        @change="changeLocation"
+        id="location"
+        class="block w-56 lg:w-80 border border-gray-300 px-3 py-2 rounded-lg appearance-none mr-2"
+        @change="updateTableData"
       >
         <option :value="null" selected>Please Select the location</option>
         <option v-for="location in locations" :key="location.docId" :value="location.id">
           {{ location.name }}
         </option>
+      </select>
+      <select
+        v-model="year"
+        name=""
+        id="year"
+        class="block w-52 lg:w-52 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
+        @change="updateTableData"
+      >
+        <option value="2025" selected>Year 2025</option>
+        <option value="2024">Year 2024</option>
       </select>
     </div>
     <ag-grid-vue
@@ -54,6 +64,7 @@ import { AgGridVue } from 'ag-grid-vue3'
 import { db } from '@/firebase'
 import { deleteDoc, doc } from 'firebase/firestore'
 import { Notivue, Notification, push } from 'notivue'
+import dbConfig from '../config.js'
 
 export default {
   components: { AgGridVue, Notivue, Notification },
@@ -69,6 +80,7 @@ export default {
   data() {
     return {
       location: null,
+      year: 2025,
       itemCols: [{ field: 'item' }, { field: 'count' }],
       cols: [
         { field: 'user' },
@@ -123,7 +135,7 @@ export default {
     },
   },
   methods: {
-    changeLocation() {
+    updateTableData() {
       this.makeTableData()
       this.fetchLocationWiseData()
     },
@@ -147,6 +159,7 @@ export default {
         .sort((a, b) => (a.date > b.date ? -1 : b.date > a.date ? 1 : 0))
     },
     fetchLocationWiseData() {
+      if (!this.location) return
       const currentLocationData = this.fetchLocationWiseItemCount[this.location]
       const itemWiseData = Object.groupBy(currentLocationData, (obj) => obj.itemid)
       this.itemWiseCountData = Object.keys(itemWiseData).map((i) => {
@@ -162,7 +175,7 @@ export default {
       // before deleting the prediction, check if the same prediction's userid has other items
       // if the user has other predictions as well, dont delete the user, else delete the user
       this.isAdminPageLoading = true
-      deleteDoc(doc(db, 'prediction', docId))
+      deleteDoc(doc(db, dbConfig.prediction, docId))
         .then(() => {
           push.success('Deleted!')
           this.getPredictions()
@@ -183,5 +196,9 @@ export default {
 <style>
 .cell-span {
   background-color: #ffffff;
+}
+.admin .location {
+  display: flex;
+  align-items: center;
 }
 </style>

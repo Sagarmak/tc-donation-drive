@@ -43,9 +43,9 @@
           class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600"
         />
       </div>
-      <div v-else class="items flex flex-wrap items-center lg:flex-row lg:justify-evenly">
+      <div v-else class="items flex flex-wrap items-center lg:flex-row lg:justify-center">
         <div
-          class="item rounded-md bg-white shadow-2xl mb-6 lg:mb-0 md:flex-1 m-2 w-full"
+          class="item rounded-md bg-white shadow-2xl mb-6 lg:mb-0 md:flex-1 m-2 max-w-64"
           v-for="item in items"
           :key="item.docId"
         >
@@ -112,6 +112,7 @@ import {
   getDocs,
 } from 'firebase/firestore'
 import { Notivue, Notification, push } from 'notivue'
+import dbConfig from '../config.js'
 
 export default {
   components: { Notivue, Notification },
@@ -167,7 +168,10 @@ export default {
       this.isLoading = true
       if (!this.location) return
       const location = this.locations.find((l) => l.id == this.location)
-      const itemRef = query(collection(db, 'items'), where('locationid', '==', this.location))
+      const itemRef = query(
+        collection(db, dbConfig.items),
+        where('locationid', '==', this.location),
+      )
       const itemSnapshot = await getDocs(itemRef)
       this.items = itemSnapshot.docs.map((doc) => {
         const itemWiseCount = this.fetchItemWiseCount[doc.data()?.id]?.reduce(
@@ -208,8 +212,8 @@ export default {
         id: this.users.length + 1,
         name: this.name,
       }
-      const docRef = await addDoc(collection(db, 'users'), formData)
-      const userRef = doc(db, 'users', docRef.id)
+      const docRef = await addDoc(collection(db, dbConfig.users), formData)
+      const userRef = doc(db, dbConfig.users, docRef.id)
       if (docRef.id) {
         getDoc(userRef)
           .then((doc) => {
@@ -230,7 +234,7 @@ export default {
             locationid: this.location,
             date: serverTimestamp(),
           }
-          return addDoc(collection(db, 'prediction'), formData)
+          return addDoc(collection(db, dbConfig.prediction), formData)
         }),
       )
       if (results.length) {

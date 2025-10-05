@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 import { db } from '@/firebase'
 import { collection, query, orderBy, getDocs } from 'firebase/firestore'
+import dbConfig from '../config.js'
 
 const store = createStore({
   state() {
@@ -17,7 +18,7 @@ const store = createStore({
       context.commit('setTheme', theme)
     },
     async fetchUsers(context) {
-      const userRef = query(collection(db, 'users'))
+      const userRef = query(collection(db, dbConfig.users))
       const userSnapshot = await getDocs(userRef)
       const users = userSnapshot.docs.map((doc) => {
         return {
@@ -28,7 +29,7 @@ const store = createStore({
       context.commit('setUsers', users)
     },
     async fetchLocations(context) {
-      const locationRef = query(collection(db, 'location'), orderBy('id'))
+      const locationRef = query(collection(db, dbConfig.location), orderBy('id'))
       const locationSnapshot = await getDocs(locationRef)
       const locations = locationSnapshot.docs.map((doc) => {
         return {
@@ -39,7 +40,7 @@ const store = createStore({
       context.commit('setLocations', locations)
     },
     async fetchItems(context) {
-      const itemRef = query(collection(db, 'items'), orderBy('id'))
+      const itemRef = query(collection(db, dbConfig.items), orderBy('id'))
       const itemSnapshot = await getDocs(itemRef)
       const items = itemSnapshot.docs.map((doc) => {
         return {
@@ -51,7 +52,7 @@ const store = createStore({
       context.commit('setItems', items)
     },
     async fetchPredictions(context) {
-      const predRef = query(collection(db, 'prediction'))
+      const predRef = query(collection(db, dbConfig.prediction))
       const predSnapshot = await getDocs(predRef)
       const predictions = predSnapshot.docs.map((doc) => {
         return {
