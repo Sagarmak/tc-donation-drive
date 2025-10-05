@@ -56,8 +56,11 @@
               alt="therabands"
             />
           </div>
-          <div class="text text-center py-2 px-2 min-h-20 flex items-center justify-center">
+          <div class="text text-xl text-center py-2 px-2 min-h-20 flex items-center justify-center">
             {{ item.name }}
+          </div>
+          <div class="text text-sm text-center py-2 px-2 min-h-24 flex items-center justify-center">
+            {{ item.description }}
           </div>
           <hr />
           <div class="counter flex justify-evenly items-center text-center min-h-8">
@@ -161,7 +164,7 @@ export default {
   methods: {
     getItemImage(item) {
       if (!item) return
-      return `/${item.location?.acronym}/${item?.acronym}.jpeg`
+      return `/${dbConfig.year}/${item.location?.acronym}/${item?.acronym}.jpeg`
     },
 
     async getAndSetItems() {
