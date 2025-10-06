@@ -75,7 +75,7 @@
             </div>
           </div>
           <hr />
-          <div class="donations p-2 text-center">Donations: {{ item.itemWiseCount }}</div>
+          <div class="donations p-2 text-center">Received: {{ item.itemWiseCount }}</div>
         </div>
       </div>
     </div>
