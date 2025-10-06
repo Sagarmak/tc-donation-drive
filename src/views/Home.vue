@@ -43,7 +43,7 @@
           class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600"
         />
       </div>
-      <div v-else class="items flex flex-wrap items-center lg:flex-row lg:justify-center">
+      <div v-else class="items flex flex-wrap items-center lg:flex-row justify-center">
         <div
           class="item rounded-md bg-white shadow-2xl mb-6 lg:mb-0 md:flex-1 m-2 max-w-64"
           v-for="item in items"
