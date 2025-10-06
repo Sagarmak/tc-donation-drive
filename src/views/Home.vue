@@ -50,11 +50,7 @@
           :key="item.docId"
         >
           <div class="item-image pt-2">
-            <img
-              class="mx-auto rounded-md object-cover px-2"
-              :src="getItemImage(item)"
-              alt="therabands"
-            />
+            <img class="mx-auto object-cover px-2" :src="getItemImage(item)" alt="therabands" />
           </div>
           <div class="text text-xl text-center py-2 px-2 min-h-20 flex items-center justify-center">
             {{ item.name }}
