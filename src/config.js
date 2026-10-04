@@ -1,9 +1,9 @@
 // DB config
 
 export default {
-  year: 2025,
+  year: 2026,
   location: 'location',
-  users: 'users-2025',
-  items: 'items-2025',
-  prediction: 'prediction-2025',
+  users: 'users-2026',
+  items: 'items-2026',
+  prediction: 'prediction-2026',
 }

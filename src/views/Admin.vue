@@ -20,7 +20,8 @@
         class="block w-52 lg:w-52 border border-gray-300 px-3 py-2 rounded-lg appearance-none"
         @change="updateTableData"
       >
-        <option value="2025" selected>Year 2025</option>
+        <option value="2026" selected>Year 2026</option>
+        <option value="2025">Year 2025</option>
         <option value="2024">Year 2024</option>
       </select>
     </div>
@@ -80,7 +81,7 @@ export default {
   data() {
     return {
       location: null,
-      year: 2025,
+      year: 2026,
       itemCols: [{ field: 'item' }, { field: 'count' }],
       cols: [
         { field: 'user' },
