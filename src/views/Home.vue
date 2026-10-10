@@ -50,7 +50,7 @@
           :key="item.docId"
         >
           <div class="item-image pt-2">
-            <img class="mx-auto object-cover px-2" :src="getItemImage(item)" alt="therabands" />
+            <img class="mx-auto object-cover px-2" :src="getItemImage(item)" :alt="item.name" />
           </div>
           <div class="text text-xl text-center py-2 px-2 min-h-20 flex items-center justify-center">
             {{ item.name }}
@@ -125,6 +125,7 @@ export default {
 
       isLoading: false,
       isDisabled: false,
+      itemsRequestId: 0,
     }
   },
   created() {
@@ -163,29 +164,56 @@ export default {
       return `/${dbConfig.year}/${item.location?.acronym}/${item?.acronym}.jpeg`
     },
 
-    async getAndSetItems() {
-      this.isLoading = true
-      if (!this.location) return
-      const location = this.locations.find((l) => l.id == this.location)
-      const itemRef = query(
-        collection(db, dbConfig.items),
-        where('locationid', '==', this.location),
-      )
-      const itemSnapshot = await getDocs(itemRef)
-      this.items = itemSnapshot.docs.map((doc) => {
-        const itemWiseCount = this.fetchItemWiseCount[doc.data()?.id]?.reduce(
-          (acc, item) => (acc += item.count),
-          0,
-        )
-        return {
-          docId: doc.id,
-          ...doc.data(),
-          location,
-          count: 0,
-          itemWiseCount: itemWiseCount || 0,
-        }
+    preloadImage(src) {
+      return new Promise((resolve) => {
+        const img = new Image()
+        // resolve on error too, so one missing image doesn't block the whole page
+        img.onload = img.onerror = () => resolve(src)
+        img.src = src
       })
-      this.isLoading = false
+    },
+
+    async getAndSetItems() {
+      if (!this.location) {
+        this.items = []
+        return
+      }
+
+      const requestedLocation = this.location
+      this.isLoading = true
+
+      try {
+        const location = this.locations.find((l) => l.id == requestedLocation)
+        const itemRef = query(
+          collection(db, dbConfig.items),
+          where('locationid', '==', requestedLocation),
+        )
+        const itemSnapshot = await getDocs(itemRef)
+
+        const items = itemSnapshot.docs.map((doc) => {
+          const itemWiseCount = this.fetchItemWiseCount[doc.data()?.id]?.reduce(
+            (acc, item) => (acc += item.count),
+            0,
+          )
+          return {
+            docId: doc.id,
+            ...doc.data(),
+            location,
+            count: 0,
+            itemWiseCount: itemWiseCount || 0,
+          }
+        })
+
+        // wait for every image of this region before showing anything
+        await Promise.all(items.map((item) => this.preloadImage(this.getItemImage(item))))
+
+        // user switched office while we were loading, so discard this result
+        if (requestedLocation !== this.location) return
+
+        this.items = items
+      } finally {
+        if (requestedLocation === this.location) this.isLoading = false
+      }
     },
 
     addValue(item, action, count) {
